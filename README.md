@@ -35,7 +35,7 @@ If you want to be able to do this and much, much more, consider getting [BetterD
 > xattr -cr /path/to/BlackScreen.app
 > ```
 
-### Option 2: Build from source using the build script
+### Option 2: Build from source using the included build script
 
 Requires Xcode Command Line Tools (`xcode-select --install`).
 
@@ -50,7 +50,3 @@ You'll see `BlackScreen.app` created in the directory. Double click it to run. Y
 ### Troubleshooting
 
 If at any point your built-in display remains black even after disconnecting an external monitor, try closing and opening the laptop lid to reset.
-
-## Disclaimer
-
-This app uses a private macOS API (`CGSConfigureDisplayEnabled`) that is not publicly documented by Apple. It could break in future macOS updates. Use at your own risk.
