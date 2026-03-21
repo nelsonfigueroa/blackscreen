@@ -60,7 +60,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         statusItem = NSStatusBar.system.statusItem(withLength: NSStatusItem.variableLength)
 
         if let button = statusItem.button {
-            button.image = NSImage(systemSymbolName: "macbook", accessibilityDescription: "Display Toggle")
+            button.image = NSImage(systemSymbolName: "macbook", accessibilityDescription: "BlackScreen")
         }
 
         // Build menu
@@ -119,7 +119,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
             statusItem.button?.image = NSImage(systemSymbolName: "macbook.slash", accessibilityDescription: "Built-in display off")
         } else {
             toggleItem.title = "Turn Off Built-in Display"
-            statusItem.button?.image = NSImage(systemSymbolName: "macbook", accessibilityDescription: "Display Toggle")
+            statusItem.button?.image = NSImage(systemSymbolName: "macbook", accessibilityDescription: "BlackScreen")
         }
 
         // Disable the toggle if no externals connected and built-in is on

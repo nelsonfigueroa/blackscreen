@@ -25,12 +25,15 @@ If you want to be able to do this and much, much more, consider getting [BetterD
 2. Unzip it
 3. Double click `BlackScreen.app` to run it. You can optionally move it to your Applications folder along with all your other apps.
 
-> **Gatekeeper warning:** Since the app is not signed with an Apple Developer certificate, macOS will block it on first launch. To bypass this:
-> 1. Right-click (or Control-click) on `BlackScreen.app`
-> 2. Select **Open** from the context menu
-> 3. Click **Open** in the warning dialog
+> **Gatekeeper warning:** Since the app is not signed by Apple, macOS will block it on first launch. To bypass this:
+> 1. Double click `BlackScreen.app` — you'll see a "Not Opened" dialog. Click "Done".
+> 2. Go to System Settings → Privacy & Security, scroll down to the Security section.
+> 3. Click on "Open Anyway" next to the BlackScreen message.
+> 4. Click "Open Anyway" again in the confirmation dialog.
 >
-> You only need to do this once. Alternatively, run this in a terminal:
+> You only need to do this once.
+> 
+> Alternatively, run this in a terminal:
 > ```
 > xattr -cr /path/to/BlackScreen.app
 > ```

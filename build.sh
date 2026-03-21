@@ -30,7 +30,7 @@ cat > "$CONTENTS/Info.plist" << 'EOF'
     <key>CFBundleName</key>
     <string>BlackScreen</string>
     <key>CFBundleIdentifier</key>
-    <string>com.displaytoggle.app</string>
+    <string>com.blackscreen.app</string>
     <key>CFBundleVersion</key>
     <string>1.0</string>
     <key>CFBundleExecutable</key>
@@ -44,6 +44,12 @@ cat > "$CONTENTS/Info.plist" << 'EOF'
 </dict>
 </plist>
 EOF
+
+# Ad-hoc code sign so macOS shows "unverified developer" instead of "damaged".
+# Without this, Gatekeeper completely blocks unsigned downloaded apps with no
+# way to open them from the GUI. Ad-hoc signing (the "-" identity) is free and
+# doesn't require an Apple Developer account.
+codesign --force --deep --sign - "$APP_BUNDLE"
 
 echo "Done! Built $APP_BUNDLE"
 echo ""
