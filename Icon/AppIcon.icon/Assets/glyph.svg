@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1024" height="1024" viewBox="0 0 1024 1024" fill="none">
+  <defs>
+    <mask id="slash-gap" maskUnits="userSpaceOnUse" x="0" y="0" width="1024" height="1024">
+      <rect width="1024" height="1024" fill="#fff"/>
+      <line x1="262" y1="262" x2="762" y2="762" stroke="#000" stroke-width="120" stroke-linecap="round"/>
+    </mask>
+  </defs>
+  <g mask="url(#slash-gap)">
+    <rect x="294" y="318" width="436" height="300" rx="34" stroke="#2F8CFF" stroke-width="44"/>
+    <rect x="222" y="650" width="580" height="52" rx="26" fill="#2F8CFF"/>
+  </g>
+  <line x1="262" y1="262" x2="762" y2="762" stroke="#2F8CFF" stroke-width="44" stroke-linecap="round"/>
+</svg>

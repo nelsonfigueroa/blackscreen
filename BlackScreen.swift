@@ -1,5 +1,6 @@
 import AppKit
 import CoreGraphics
+import IOKit
 
 // MARK: - Private API
 
@@ -29,6 +30,18 @@ func hasExternalDisplays() -> Bool {
     return getOnlineDisplays().contains { CGDisplayIsBuiltin($0) == 0 }
 }
 
+// Reads the lid state from the power management service. Desktop Macs have no
+// lid, so the property is missing and this returns false.
+func isLidClosed() -> Bool {
+    let rootDomain = IOServiceGetMatchingService(kIOMainPortDefault, IOServiceMatching("IOPMrootDomain"))
+    guard rootDomain != 0 else { return false }
+    defer { IOObjectRelease(rootDomain) }
+    let state = IORegistryEntryCreateCFProperty(
+        rootDomain, "AppleClamshellState" as CFString, kCFAllocatorDefault, 0
+    )?.takeRetainedValue()
+    return (state as? Bool) ?? false
+}
+
 func setDisplayEnabled(_ displayID: CGDirectDisplayID, enabled: Bool) -> Bool {
     var config: CGDisplayConfigRef?
     guard CGBeginDisplayConfiguration(&config) == .success,
@@ -42,9 +55,24 @@ func setDisplayEnabled(_ displayID: CGDirectDisplayID, enabled: Bool) -> Bool {
     return CGCompleteDisplayConfiguration(config, .permanently) == .success
 }
 
+// CoreGraphics calls this C callback on a thread Swift can't verify, so it
+// only hops to the main actor, where all app state lives.
+nonisolated func displayReconfigured(
+    _ display: CGDirectDisplayID,
+    _ flags: CGDisplayChangeSummaryFlags,
+    _ userInfo: UnsafeMutableRawPointer?
+) {
+    // We only care about the "done" phase of a reconfiguration
+    guard !flags.contains(.beginConfigurationFlag) else { return }
+    Task { @MainActor in
+        (NSApp.delegate as? AppDelegate)?.handleDisplayChange()
+    }
+}
+
 // MARK: - App Delegate
 
-class AppDelegate: NSObject, NSApplicationDelegate {
+@MainActor
+final class AppDelegate: NSObject, NSApplicationDelegate {
     var statusItem: NSStatusItem!
     var toggleItem: NSMenuItem!
 
@@ -78,6 +106,16 @@ class AppDelegate: NSObject, NSApplicationDelegate {
 
         statusItem.menu = menu
 
+        // Recover from a crash or force quit that left the built-in display
+        // off. A disabled display drops out of the online list, so try the
+        // usual built-in ID. Skipped with the lid closed, where a missing
+        // built-in display is expected.
+        if findBuiltInDisplay() == nil && !isLidClosed() {
+            if setDisplayEnabled(kBuiltInFallbackID, enabled: true) {
+                NSLog("Built-in display was missing at launch, re-enabled it")
+            }
+        }
+
         // Remember built-in display ID
         if let builtIn = findBuiltInDisplay() {
             lastBuiltInID = builtIn
@@ -85,18 +123,12 @@ class AppDelegate: NSObject, NSApplicationDelegate {
 
         // Register for display configuration changes.
         // This fires when displays are connected/disconnected.
-        CGDisplayRegisterReconfigurationCallback({ displayID, flags, userInfo in
-            let delegate = Unmanaged<AppDelegate>.fromOpaque(userInfo!).takeUnretainedValue()
-            delegate.handleDisplayChange(displayID: displayID, flags: flags)
-        }, Unmanaged.passUnretained(self).toOpaque())
+        CGDisplayRegisterReconfigurationCallback(displayReconfigured, nil)
 
         updateMenuState()
     }
 
-    func handleDisplayChange(displayID: CGDirectDisplayID, flags: CGDisplayChangeSummaryFlags) {
-        // We only care about the "done" phase of a reconfiguration
-        guard flags.contains(.beginConfigurationFlag) == false else { return }
-
+    func handleDisplayChange() {
         // If built-in is disabled and all externals just disappeared, recover
         if builtInDisabled && !hasExternalDisplays() {
             NSLog("External displays gone — restoring built-in display")
@@ -110,7 +142,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
             lastBuiltInID = builtIn
         }
 
-        DispatchQueue.main.async { self.updateMenuState() }
+        updateMenuState()
     }
 
     func updateMenuState() {
@@ -166,11 +198,15 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         alert.runModal()
     }
 
-    @objc func quitApp() {
-        // Re-enable built-in display before quitting so user isn't stranded
+    // Runs on Quit, logout, restart, and shutdown. Re-enable the built-in
+    // display so the user isn't stranded.
+    func applicationWillTerminate(_ notification: Notification) {
         if builtInDisabled {
             _ = setDisplayEnabled(lastBuiltInID, enabled: true)
         }
+    }
+
+    @objc func quitApp() {
         NSApp.terminate(nil)
     }
 }

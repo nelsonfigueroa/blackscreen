@@ -52,4 +52,4 @@ You'll see `BlackScreen.app` created in the directory. Double click it to run. Y
 
 ### Troubleshooting
 
-If at any point your built-in display remains black even after disconnecting an external monitor, try closing and opening the laptop lid to reset.
+If your built-in display stays black (for example, after BlackScreen crashed or was force quit), open BlackScreen again. On launch it'll re-enable the laptop display if it's not on.

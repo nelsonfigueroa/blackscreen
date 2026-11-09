@@ -1,4 +1,3 @@
 BlackScreen.app/
-AppIcon.icns
-AppIcon.iconset/
+.build/
 .DS_Store
