@@ -9,7 +9,11 @@ RESOURCES="$CONTENTS/Resources"
 BUILD_DIR=".build"
 MIN_MACOS="13.0"
 
-echo "Building $APP_NAME..."
+# So that Finder > Get Info shows the same version as the git tag
+VERSION=$(git describe --tags --abbrev=0 2>/dev/null || echo v0.0.0)
+VERSION=${VERSION#v}
+
+echo "Building $APP_NAME $VERSION..."
 
 rm -rf "$APP_BUNDLE" "$BUILD_DIR"
 mkdir -p "$MACOS" "$RESOURCES" "$BUILD_DIR"
@@ -52,8 +56,10 @@ cat > "$CONTENTS/Info.plist" << EOF
     <string>BlackScreen</string>
     <key>CFBundleIdentifier</key>
     <string>com.blackscreen.app</string>
+    <key>CFBundleShortVersionString</key>
+    <string>$VERSION</string>
     <key>CFBundleVersion</key>
-    <string>1.0</string>
+    <string>$VERSION</string>
     <key>CFBundleExecutable</key>
     <string>BlackScreen</string>
     <key>CFBundleIconFile</key>
